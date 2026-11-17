@@ -1,4 +1,2 @@
 # These are for flit templates and tests, lintian is (understandably) wrong.
-flit binary: script-not-executable [usr/lib/python3/dist-packages/flit_core/tests/samples/package1/data_dir/foo.sh]
 flit binary: extra-license-file
-flit binary: package-contains-documentation-outside-usr-share-doc

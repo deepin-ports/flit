@@ -1,6 +1,72 @@
 Release history
 ===============
 
+Version 4.1
+-----------
+
+- License expressions with named exceptions, the WITH syntax, are accepted
+  (:ghpull:`809`).
+- ``flit init`` allows dotted module names, for a component of a namespace
+  package (:ghissue:`822`).
+- Fix line endings in ``.cmd`` script wrappers on Windows (:ghpull:`824`).
+
+Version 4.0.3
+-------------
+
+- Fix built wheels being created with overly restrictive ``0600`` permissions
+  instead of the normal, world-readable ``0644`` (:ghpull:`806`).
+
+Version 4.0.2
+-------------
+
+- Fix invalid metadata files with ``Import-Name`` (:ghissue:`813`).
+
+Version 4.0.1
+-------------
+
+No changes, but a new tag to trigger an upload to PyPI now that twine will
+accept it.
+
+Version 4.0
+-----------
+
+This version contains breaking changes, but most projects which are already
+using the ``[project]`` table for metadata shouldn't be affected, and can simply
+change the ``flit_core <4`` constraint to ``<5``.
+
+- The ``[tool.flit.metadata]`` table is no longer used for project metadata
+  (:ghpull:`771`). Use the newer :ref:`[project] table <pyproject_toml_project>`
+  instead (or if that is not possible, build with ``flit_core <4``).
+- :ref:`build_cmd` and :ref:`publish_cmd` no longer include files in the sdist
+  based on what is committed in git or Mercurial (:ghpull:`772`). These commands
+  now build packages more like Flit does when called as a backend by e.g.
+  ``python -m build``. Specify :ref:`sdist include & exclude patterns
+  <pyproject_toml_sdist>` instead (Flit can help to generate these), or pass
+  the ``--use-vcs`` option to get the old behaviour back.
+- ``flit_core`` now requires Python 3.8 or above (:ghpull:`738`)
+- The ``--setup-py`` option to generate sdists containing a ``setup.py`` file
+  is no longer available (:ghpull:`776`).
+- Making typing stubs packages with a ``-stubs`` suffix will now work
+  (:ghpull:`742`).
+- The default glob patterns for license files have been extended to include
+  ``NOTICE*`` and ``AUTHORS*`` (:ghpull:`758`).
+- ``license-files`` glob patterns can contain spaces (:ghpull:`797`).
+- Fix a bug where license files could be found twice on Windows (:ghpull:`752`).
+- The new ``Import-Name`` and ``Import-Namespace`` metadata fields (metadata 2.5)
+  are now supported (:ghpull:`774`). In most cases no new input is required,
+  as Flit will create this metadata automatically.
+- Fix creating RECORD files when file names include commas (:ghpull:`744`).
+- The ``--use-vcs`` option now correctly recognises git from inside a git
+  worktree folder (:ghpull:`799`).
+- On Python 3.12 and above, ``flit build`` now uses the 'data' filter when
+  extracting the just-created sdist prior to building a wheel (:ghpull:`775`).
+  This restricts some special features of tar files, but sdists are unlikely
+  to use these features, and they would probably break in other scenarios if
+  you did.
+- The vendorised ``readme_renderer`` package was updated to version 44.0
+  (:ghpull:`760`).
+
+
 Version 3.12
 ------------
 
@@ -42,8 +108,8 @@ Version 3.10
   or user tokens (:samp:`pypi_token:user:{username}`).
 - The ``--python`` option can now take the path of a virtualenv folder, as an
   alternative to a Python executable (:ghpull:`667`).
-- Flit will work with current development versions of Pythona again (:ghpull:`684`).
-- The ``flit`` command line package now requires Python 3.8 or above (:ghpulL:`660`).
+- Flit will work with current development versions of Python again (:ghpull:`684`).
+- The ``flit`` command line package now requires Python 3.8 or above (:ghpull:`660`).
   ``flit_core`` still works with Python 3.6 or above.
 - The metadata in packages now has the names of optional dependency groups
   ("extras") normalised, complying with version 2.3 of the metadata standard
@@ -56,7 +122,7 @@ Version 3.10
   (:ghpull:`674`). It's a good idea to always set a maximum version for the
   build requirement, to protect against changes in future major versions of Flit.
 - Avoid using the deprecated ``datetime.utcfromtimestamp()`` (:ghpull:`682`).
-- Flit now has a ``SECURITY.md`` file in the Github repository (:ghpull:`665`).
+- Flit now has a ``SECURITY.md`` file in the GitHub repository (:ghpull:`665`).
 - The tests for ``flit_core`` are no longer part of the installed package,
   reducing the size of the wheels (:ghpull:`691`).
 
@@ -383,7 +449,7 @@ Version 1.0
   (``.rst``, ``.md`` or ``.txt``). Previously, only reStructuredText was
   officially supported.
 - Multiple links (e.g. documentation, bug tracker) can now be specified in a
-  new :ref:`[tool.flit.metadata.urls] section <pyproject_toml_urls>` of
+  new ``[tool.flit.metadata.urls]`` section of
   ``pyproject.toml``.
 - Dependencies are now correctly installed to the target Python when you use
   the ``--symlink`` or ``--pth-file`` options.
@@ -526,7 +592,7 @@ Version 0.8
 -----------
 
 - A new ``flit installfrom`` subcommand to install a project from a source
-  archive, such as from Github.
+  archive, such as from GitHub.
 - :doc:`Reproducible builds <reproducible>` - you can produce byte-for-byte
   identical wheels.
 - A warning for non-canonical version numbers according to `PEP 440

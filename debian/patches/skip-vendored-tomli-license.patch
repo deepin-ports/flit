@@ -11,12 +11,10 @@ Last-Update: 2025-03-30
  flit_core/pyproject.toml | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/flit_core/pyproject.toml b/flit_core/pyproject.toml
-index 11702af..0fb2e85 100644
 --- a/flit_core/pyproject.toml
 +++ b/flit_core/pyproject.toml
-@@ -13,7 +13,7 @@ dependencies = []
- requires-python = '>=3.6'
+@@ -13,7 +13,7 @@
+ requires-python = '>=3.8'
  readme = "README.rst"
  license = "BSD-3-Clause"
 -license-files = ["LICENSE*", "flit_core/vendor/**/LICENSE*"]

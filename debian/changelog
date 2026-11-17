@@ -1,3 +1,53 @@
+flit (4.1.0-4) unstable; urgency=medium
+
+  * Mark python3-flit "Multi-Arch: foreign",
+    thanks Nilesh Patra & Helmut Grohne
+
+ -- Alexandre Detiste <tchet@debian.org>  Thu, 24 Sep 2026 19:11:26 +0200
+
+flit (4.1.0-3) unstable; urgency=medium
+
+  * Split-out the build-engine in the new "python3-flit" package,
+    the new "flit" only retains the command-line utility (Closes: #1148412)
+
+ -- Alexandre Detiste <tchet@debian.org>  Thu, 24 Sep 2026 15:00:02 +0200
+
+flit (4.1.0-2) experimental; urgency=medium
+
+  * Split-out "python3-flit" binary package with the build-engine only.
+    "flit" only retains the command-line utility (Closes: #1148412)
+
+ -- Alexandre Detiste <tchet@debian.org>  Sat, 19 Sep 2026 19:06:09 +0200
+
+flit (4.1.0-1) experimental; urgency=medium
+
+  * New upstream version 4.1.0
+
+ -- Alexandre Detiste <tchet@debian.org>  Sat, 19 Sep 2026 16:43:03 +0200
+
+flit (3.12.0-4) unstable; urgency=medium
+
+  * Adopt package inside DPT (Closes: #1138954)
+    thank you Scott Kitterman for your work
+  * Tweak d/salsa-ci.yml, enable build profiles
+  * Mark build-deps !nocheck or !nodoc
+  * d/rules: guard the call to sphinx-build in a if-block
+  * Drop "Rules-Requires-Root: no": it is the default now
+  * Bump Standards-Version to 4.7.4, drop Priority: tag
+  * Rewrite d/watch in v5 format
+  * Add debian/upstream/metadata
+
+ -- Alexandre Detiste <tchet@debian.org>  Mon, 22 Jun 2026 14:14:50 +0200
+
+flit (3.12.0-3) unstable; urgency=medium
+
+  * Team upload.
+  * Replace man_show_urls=True with man_show_urls=1 (closes: #1114103).
+  * Fix Sphinx warnings by adding sphinxcontrib_github_alt extension.
+  * Remove unused Lintian overrides.
+
+ -- Dmitry Shachnev <mitya57@debian.org>  Sun, 07 Sep 2025 00:20:08 +0300
+
 flit (3.12.0-2) unstable; urgency=medium
 
   * Team upload.

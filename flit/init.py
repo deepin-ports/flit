@@ -69,6 +69,9 @@ class IniterBase:
     def validate_homepage(self, s):
         return not s or s.startswith(('http://', 'https://'))
 
+    def validate_module_name(self, s):
+        return bool(s) and all(n.isidentifier() for n in s.split('.'))
+
     def guess_module_name(self):
         packages, modules = [], []
         for p in self.directory.iterdir():
@@ -107,7 +110,7 @@ class IniterBase:
     def update_defaults(self, author, author_email, module, home_page, license):
         new_defaults = {'author': author, 'author_email': author_email,
                         'license': license}
-        name_chunk_pat = r'\b{}\b'.format(re.escape(module))
+        name_chunk_pat = rf'\b{re.escape(module)}\b'
         if re.search(name_chunk_pat, home_page):
             new_defaults['home_page_template'] = \
                 re.sub(name_chunk_pat, '{modulename}', home_page, flags=re.I)
@@ -136,7 +139,7 @@ class IniterBase:
 class TerminalIniter(IniterBase):
     def prompt_text(self, prompt, default, validator, retry_msg="Try again."):
         if default is not None:
-            p = "{} [{}]: ".format(prompt, default)
+            p = f"{prompt} [{default}]: "
         else:
             p = prompt + ': '
         while True:
@@ -153,14 +156,14 @@ class TerminalIniter(IniterBase):
 
         print(prompt)
         for i, (key, text) in enumerate(options, start=1):
-            print("{}. {}".format(i, text))
+            print(f"{i}. {text}")
             if key == default:
                 default_ix = i
 
         while True:
             p = "Enter 1-" + str(len(options))
             if default_ix is not None:
-                p += ' [{}]'.format(default_ix)
+                p += f' [{default_ix}]'
             response = input(p+': ')
             if (default_ix is not None) and response == '':
                 return default
@@ -178,7 +181,7 @@ class TerminalIniter(IniterBase):
                 return
 
         module = self.prompt_text('Module name', self.guess_module_name(),
-                                  str.isidentifier)
+                                  self.validate_module_name)
         author = self.prompt_text('Author', self.defaults.get('author'),
                                   lambda s: True)
         author_email = self.prompt_text('Author email',
@@ -190,7 +193,7 @@ class TerminalIniter(IniterBase):
             home_page_default = None
         home_page = self.prompt_text('Home page', home_page_default, self.validate_homepage,
                                      retry_msg="Should start with http:// or https:// - try again.")
-        license = self.prompt_options('Choose a license (see http://choosealicense.com/ for more info)',
+        license = self.prompt_options('Choose a license (see https://choosealicense.com/ for more info)',
                     license_choices, self.defaults.get('license'))
 
         readme = self.find_readme()
@@ -236,7 +239,7 @@ class TerminalIniter(IniterBase):
 
 TEMPLATE = """\
 [build-system]
-requires = ["flit_core >=3.11,<4"]
+requires = ["flit_core >=3.11,<5"]
 build-backend = "flit_core.buildapi"
 
 [project]

@@ -3,6 +3,7 @@ from os.path import join as pjoin
 from pathlib import Path
 import pytest
 from shutil import which, copytree
+from subprocess import run
 import sys
 import tarfile
 from tempfile import TemporaryDirectory
@@ -33,22 +34,7 @@ def test_make_sdist():
         assert_isfile(sdist_file)
 
         with tarfile.open(str(sdist_file)) as tf:
-            assert 'package1-0.1/setup.py' in tf.getnames()
-
-
-def test_sdist_no_setup_py():
-    # Smoke test of making a complete sdist
-    if not which('git'):
-        pytest.skip("requires git")
-    builder = sdist.SdistBuilder.from_ini_path(samples_dir / 'package1' / 'pyproject.toml')
-    with TemporaryDirectory() as td:
-        td = Path(td)
-        builder.build(td, gen_setup_py=False)
-        sdist_file = td / 'package1-0.1.tar.gz'
-        assert_isfile(sdist_file)
-
-        with tarfile.open(str(sdist_file)) as tf:
-            assert 'package1-0.1/setup.py' not in tf.getnames()
+            assert 'package1-0.1/pyproject.toml' in tf.getnames()
 
 
 LIST_FILES = """\
@@ -88,6 +74,22 @@ def test_get_files_list_git(copy_sample):
         pjoin('dir2', 'abc')
     }
 
+def test_get_files_list_with_real_git(copy_sample):
+    if not which('git'):
+        pytest.skip("requires git")
+
+    td = copy_sample('module1_toml')
+    unicode_file = td / 'café.txt'
+    unicode_file.write_text('tracked by git', encoding='utf-8')
+
+    run(['git', 'init'], cwd=td, check=True, capture_output=True)
+    run(['git', 'add', '.'], cwd=td, check=True, capture_output=True)
+
+    builder = sdist.SdistBuilder.from_ini_path(td / 'pyproject.toml')
+    files = builder.select_files()
+
+    assert unicode_file.name in files
+
 def test_get_files_list_hg(tmp_path):
     dir1 = tmp_path / 'dir1'
     copytree(str(samples_dir / 'module1_toml'), str(dir1))
@@ -100,53 +102,10 @@ def test_get_files_list_hg(tmp_path):
         'bar', pjoin('subdir', 'qux')
     }
 
-def get_setup_assigns(setup):
-    """Parse setup.py, execute assignments, return the namespace"""
-    setup_ast = ast.parse(setup)
-    # Select only assignment statements
-    setup_ast.body = [n for n in setup_ast.body if isinstance(n, ast.Assign)]
-    ns = {}
-    exec(compile(setup_ast, filename="setup.py", mode="exec"), ns)
-    return ns
-
-def test_make_setup_py():
-    builder = sdist.SdistBuilder.from_ini_path(samples_dir / 'package1' / 'pyproject.toml')
-    ns = get_setup_assigns(builder.make_setup_py())
-    assert ns['packages'] == ['package1', 'package1.subpkg', 'package1.subpkg2']
-    assert 'install_requires' not in ns
-    assert ns['entry_points'] == \
-           {'console_scripts': ['pkg_script = package1:main']}
-
-def test_make_setup_py_reqs():
-    builder = sdist.SdistBuilder.from_ini_path(samples_dir / 'extras' / 'pyproject.toml')
-    ns = get_setup_assigns(builder.make_setup_py())
-    assert ns['install_requires'] == ['toml']
-    assert ns['extras_require'] == {'test': ['pytest'], 'custom': ['requests']}
-
-def test_make_setup_py_reqs_envmark():
-    builder = sdist.SdistBuilder.from_ini_path(samples_dir / 'requires-envmark' / 'pyproject.toml')
-    ns = get_setup_assigns(builder.make_setup_py())
-    assert ns['install_requires'] == ['requests']
-    assert ns['extras_require'] == {":python_version == '2.7'": ['pathlib2']}
-
-def test_make_setup_py_reqs_extra_envmark():
-    builder = sdist.SdistBuilder.from_ini_path(samples_dir / 'requires-extra-envmark' / 'pyproject.toml')
-    ns = get_setup_assigns(builder.make_setup_py())
-    assert ns['extras_require'] == {'test:python_version == "2.7"': ['pathlib2']}
-
-def test_make_setup_py_package_dir_src():
-    builder = sdist.SdistBuilder.from_ini_path(samples_dir / 'packageinsrc' / 'pyproject.toml')
-    ns = get_setup_assigns(builder.make_setup_py())
-    assert ns['package_dir'] == {'': 'src'}
-
-def test_make_setup_py_ns_pkg():
-    builder = sdist.SdistBuilder.from_ini_path(samples_dir / 'ns1-pkg' / 'pyproject.toml')
-    setup = builder.make_setup_py()
-    ns = get_setup_assigns(setup)
-    assert ns['packages'] == ['ns1', 'ns1.pkg']
-
-def test_make_setup_py_ns_pkg_mod():
-    builder = sdist.SdistBuilder.from_ini_path(samples_dir / 'ns1-pkg-mod' / 'pyproject.toml')
-    setup = builder.make_setup_py()
-    ns = get_setup_assigns(setup)
-    assert ns['packages'] == ['ns1']
+def test_make_stubs_pkg():
+    builder = sdist.SdistBuilder.from_ini_path(samples_dir / 'sample-stubs' / 'pyproject.toml')
+    with TemporaryDirectory() as td:
+        td = Path(td)
+        builder.build(td)
+        sdist_file = td / 'wcwidth_stubs-0.2.13.1.tar.gz'
+        assert_isfile(sdist_file)

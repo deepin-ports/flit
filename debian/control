@@ -1,29 +1,36 @@
 Source: flit
 Section: python
-Priority: optional
 Maintainer: Debian Python Team <team+python@tracker.debian.org>
-Uploaders: Scott Kitterman <scott@kitterman.com>
-Build-Depends: debhelper-compat (= 13),
-               dh-sequence-python3,
-               pybuild-plugin-pyproject,
-               python3-all,
+Uploaders:
+ Alexandre Detiste <tchet@debian.org>,
+Build-Depends:
+ debhelper-compat (= 13),
+ dh-sequence-python3,
+ pybuild-plugin-pyproject,
+ python3-all,
 Build-Depends-Indep:
-               python3-tomli-w,
-               python3-sphinx,
-               python3-pytest,
-               python3-requests,
-               python3-responses,
-               python3-testpath,
-Standards-Version: 4.7.2
+ python3-pytest <!nocheck>,
+ python3-requests <!nocheck>,
+ python3-responses <!nocheck>,
+ python3-sphinx <!nodoc>,
+ python3-sphinxcontrib-github-alt <!nodoc>,
+ python3-testpath <!nocheck>,
+ python3-tomli-w <!nocheck>,
+Standards-Version: 4.7.4
 Homepage: https://flit.readthedocs.io/en/latest/
-Rules-Requires-Root: no
 Vcs-Git: https://salsa.debian.org/python-team/packages/flit.git
 Vcs-Browser: https://salsa.debian.org/python-team/packages/flit
 
-Package: flit
+Package: python3-flit
 Architecture: all
-Depends: ${misc:Depends},
-         ${python3:Depends},
+Multi-Arch: foreign
+Depends:
+ ${misc:Depends},
+ ${python3:Depends},
+Breaks:
+ flit (<= 4.1.0-2~),
+Replaces:
+ flit (<= 4.1.0-2~),
 Description: simple way to put Python packages and modules on PyPI (PEP 517)
  Flit is a easy way to put Python packages and modules on PyPI. It tries to
  require less thought about packaging and help you avoid common mistakes.
@@ -38,3 +45,27 @@ Description: simple way to put Python packages and modules on PyPI (PEP 517)
  (neither compiling C code, nor bundling Javascript, etc.). The vast majority
  of packages on PyPI are like this: plain Python code, with maybe some static
  data files like icons included.
+
+Package: flit
+Depends:
+ python3-flit,
+ ${misc:Depends},
+ ${python3:Depends},
+Architecture: all
+Multi-Arch: foreign
+Description: simple way to put Python packages and modules on PyPI (PEP 517) - cli
+ Flit is a easy way to put Python packages and modules on PyPI. It tries to
+ require less thought about packaging and help you avoid common mistakes.
+ .
+ Flit supports PEP 517 Python packaging and PEP 621 project metadata.
+ .
+ Make the easy things easy and the hard things possible is an old motto from
+ the Perl community. Flit is entirely focused on the easy things part of that,
+ and leaves the hard things up to other tools.
+ .
+ Specifically, the easy things are pure Python packages with no build steps
+ (neither compiling C code, nor bundling Javascript, etc.). The vast majority
+ of packages on PyPI are like this: plain Python code, with maybe some static
+ data files like icons included.
+ .
+ This package contains the command line utility.

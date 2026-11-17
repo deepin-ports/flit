@@ -33,9 +33,19 @@ override_dh_auto_build:
 	pybuild --build -d flit_core --name flit_core
 
 override_dh_auto_install:
-	pybuild --install --dest-dir debian/flit --name flit
-	pybuild --install --dest-dir debian/flit -d flit_core --name flit_core
-	sphinx-build -b man -D extensions='sphinx.ext.ifconfig' -D man_show_urls=True doc/ debian/
+	pybuild --install --dest-dir debian/python3-flit --name flit
+	pybuild --install --dest-dir debian/python3-flit -d flit_core --name flit_core
+ifeq (,$(filter nodoc,$(DEB_BUILD_OPTIONS)))
+	sphinx-build -W -b man -D extensions='sphinx.ext.ifconfig,sphinxcontrib_github_alt' -D man_show_urls=1 doc/ debian/
+endif
+	mkdir -p debian/flit/usr/bin/
+	mv debian/python3-flit/usr/bin/* debian/flit/usr/bin/
+	rmdir debian/python3-flit/usr/bin/
+
+execute_after_dh_python3:
+	mv debian/flit.substvars debian/swap.substvars
+	mv debian/python3-flit.substvars debian/flit.substvars
+	mv debian/swap.substvars debian/python3-flit.substvars
 
 override_dh_auto_test:
 	pybuild --test -d flit_core --name flit_core --test-pytest \

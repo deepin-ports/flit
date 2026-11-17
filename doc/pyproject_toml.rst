@@ -5,11 +5,13 @@ This file lives next to the module or package.
 
 .. note::
 
-   Older version of Flit (up to 0.11) used a :doc:`flit.ini file <flit_ini>` for
-   similar information. These files no longer work with Flit 3 and above.
+    Flit 3.x supported an alternative, older way of specifying project metadata
+    in a ``[tool.flit.metadata]`` table. This was superseded by the ``[project]``
+    table described below.
 
-   Run ``python3 -m flit.tomlify`` to convert a ``flit.ini`` file to
-   ``pyproject.toml``.
+    If you need to build a package that used ``[tool.flit.metadata]``, you will
+    need ``flit_core <4``. Hopefully most packages specify this constraint and
+    will automatically be built with the right version.
 
 Build system section
 --------------------
@@ -20,19 +22,22 @@ defined by PEP 517. For any new project using Flit, it will look like this:
 .. code-block:: toml
 
     [build-system]
-    requires = ["flit_core >=3.11,<4"]
+    requires = ["flit_core >=3.11,<5"]
     build-backend = "flit_core.buildapi"
 
 Version constraints:
 
-- For now, all packages should specify ``<4``, so they won't be impacted by
+- For now, all packages should specify ``<5``, so they won't be impacted by
   changes in the next major version.
+- ``import-names`` and ``import-namespaces`` require ``flit_core >=4``.
+- License expressions using ``WITH`` require ``flit_core >=4.1``.
 - ``license-files`` and license expressions in the ``license`` field require
   ``flit_core >=3.11``.
-- :ref:`pyproject_toml_project` requires ``flit_core >=3.2``
-- :ref:`pyproject_old_metadata` requires ``flit_core >=2,<4``
-- The older :doc:`flit.ini file <flit_ini>` requires ``flit_core <3``.
+- :ref:`pyproject_toml_project` requires ``flit_core >=3.2``.
+- The older ``[tool.flit.metadata]`` metadata table requires ``flit_core >=2,<4``.
+- The very old ``flit.ini`` file requires ``flit_core <3``.
 - TOML features new in version 1.0 require ``flit_core >=3.4``.
+- ``flit_core`` 3.12 is the last version supporting Python 3.6 & 3.7.
 - ``flit_core`` 3.3 is the last version supporting Python 3.4 & 3.5. Packages
   supporting these Python versions can only use `TOML v0.5
   <https://toml.io/en/v0.5.0>`_.
@@ -41,16 +46,10 @@ Version constraints:
 
 .. _pyproject_toml_project:
 
-New style metadata
-------------------
+Project metadata
+----------------
 
-.. versionadded:: 3.2
-
-The new standard way to specify project metadata is in a ``[project]`` table,
-as defined by :pep:`621`. Flit works for now with either this or the older
-``[tool.flit.metadata]`` table (:ref:`described below <pyproject_old_metadata>`),
-but it won't allow you to mix them.
-
+Project metadata is specified in the standard ``[project]`` table.
 A simple ``[project]`` table might look like this:
 
 .. code-block:: toml
@@ -64,6 +63,10 @@ A simple ``[project]`` table might look like this:
     license = "MIT"
     requires-python = ">=3.5"
     dynamic = ["version", "description"]
+
+.. seealso::
+
+   `The pyproject.toml specification <https://packaging.python.org/en/latest/specifications/pyproject-toml/>`_
 
 The allowed fields are:
 
@@ -87,21 +90,21 @@ description
 readme
   A path (relative to the .toml file) to a file containing a longer description
   of your package to show on PyPI. This should be written in `reStructuredText
-  <http://docutils.sourceforge.net/docs/user/rst/quickref.html>`_, Markdown or
+  <https://docutils.sourceforge.io/docs/user/rst/quickref.html>`_, Markdown or
   plain text, and the filename should have the appropriate extension
   (``.rst``, ``.md`` or ``.txt``). Alternatively, ``readme`` can be a table with
   either a ``file`` key (a relative path) or a ``text`` key (literal text), and
   an optional ``content-type`` key (e.g. ``text/x-rst``).
 requires-python
   A version specifier for the versions of Python this requires, e.g. ``~=3.3`` or
-  ``>=3.3,<4``, which are equivalents.
+  ``>=3.3,<4``, which are equivalent.
 license
   A valid SPDX `license expression <https://peps.python.org/pep-0639/#term-license-expression>`_
   or a table with either a ``file`` key (a relative path to a license file) or a
   ``text`` key (the license text).
 license-files
   A list of glob patterns for license files to include.
-  Defaults to ``['COPYING*', 'LICEN[CS]E*']``.
+  Defaults to ``['COPYING*', 'LICEN[CS]E*', 'NOTICE*', 'AUTHORS*']``.
 authors
   A list of tables with ``name`` and ``email`` keys (both optional) describing
   the authors of the project.
@@ -113,6 +116,15 @@ classifiers
   A list of `Trove classifiers <https://pypi.python.org/pypi?%3Aaction=list_classifiers>`_.
   Add ``Private :: Do Not Upload`` into the list to prevent a private package
   from being uploaded to PyPI by accident.
+import-names
+  A list containing the importable module names in this package. You don't
+  normally need to supply this manually, but you can specify it with a
+  ``; private`` suffix to record that the module is not intended for public use.
+  This does not stop anyone importing it.
+import-namespaces
+  A list of import names in this package which are namespace packages. Like
+  ``import-names``, Flit will supply this metadata automatically if you use
+  namespace packages.
 dependencies & optional-dependencies
   See :ref:`pyproject_project_dependencies`.
 urls
@@ -123,7 +135,8 @@ entry-points
   See :ref:`pyproject_project_entrypoints`.
 dynamic
   A list of field names which aren't specified here, for which Flit should
-  find a value at build time. Only "version" and "description" are accepted.
+  find a value at build time. Only "version", "description", "import-names"
+  and "import-namespaces" are accepted.
 
 .. _pyproject_project_dependencies:
 
@@ -204,7 +217,7 @@ without a console.
 Entry points sections
 ~~~~~~~~~~~~~~~~~~~~~
 
-You can declare `entry points <http://entrypoints.readthedocs.io/en/latest/>`_
+You can declare `entry points <https://entrypoints.readthedocs.io/en/latest/>`_
 using sections named :samp:`[project.entry-points.{groupname}]`. E.g. to
 provide a pygments lexer from your package:
 
@@ -246,172 +259,23 @@ Flit looks for the source of the package by its import name. The source may be
 located either in the directory that holds the ``pyproject.toml`` file, or in a
 ``src/`` subdirectory.
 
-.. _pyproject_old_metadata:
-
-Old style metadata
-------------------
-
-Flit's older way to specify metadata is in a ``[tool.flit.metadata]`` table,
-along with ``[tool.flit.scripts]`` and ``[tool.flit.entrypoints]``, described
-below. This is still recognised for now, but you can't mix it with
-:ref:`pyproject_toml_project`.
-
-There are three required fields:
-
-module
-  The name of the module/package, as you'd use in an import statement.
-author
-  Your name
-author-email
-  Your email address
-
-e.g. for flit itself
-
-.. code-block:: toml
-
-    [tool.flit.metadata]
-    module = "flit"
-    author = "Thomas Kluyver"
-    author-email = "thomas@kluyver.me.uk"
-
-.. versionchanged:: 1.1
-
-   ``home-page`` was previously required.
-
-The remaining fields are optional:
-
-home-page
-  A URL for the project, such as its Github repository.
-requires
-  A list of other packages from PyPI that this package needs. Each package may
-  be followed by a version specifier like ``(>=4.1)`` or ``>=4.1``, and/or an
-  `environment marker`_
-  after a semicolon. For example:
-
-  .. code-block:: toml
-
-      requires = [
-          "requests >=2.6",
-          "configparser; python_version == '2.7'",
-      ]
-
-requires-extra
-  Lists of packages needed for every optional feature. The requirements
-  are specified in the same format as for ``requires``. The requirements of
-  the two reserved extras ``test`` and ``doc`` as well as the extra ``dev``
-  are installed by ``flit install``. For example:
-
-  .. code-block:: toml
-
-      [tool.flit.metadata.requires-extra]
-      test = [
-          "pytest >=2.7.3",
-          "pytest-cov",
-      ]
-      doc = ["sphinx"]
-
-  .. versionadded:: 1.1
-
-description-file
-  A path (relative to the .toml file) to a file containing a longer description
-  of your package to show on PyPI. This should be written in `reStructuredText
-  <http://docutils.sourceforge.net/docs/user/rst/quickref.html>`_, Markdown or
-  plain text, and the filename should have the appropriate extension
-  (``.rst``, ``.md`` or ``.txt``).
-classifiers
-  A list of `Trove classifiers <https://pypi.python.org/pypi?%3Aaction=list_classifiers>`_.
-  Add ``Private :: Do Not Upload`` into the list to prevent a private package
-  from uploading on PyPI by accident.
-requires-python
-  A version specifier for the versions of Python this requires, e.g. ``~=3.3`` or
-  ``>=3.3,<4`` which are equivalents.
-dist-name
-  If you want your package's name on PyPI to be different from the importable
-  module name, set this to the PyPI name.
-keywords
-  Comma separated list of words to help with searching for your package.
-license
-  The name of a license, if you're using one for which there isn't a Trove
-  classifier. It's recommended to use Trove classifiers instead of this in
-  most cases.
-maintainer, maintainer-email
-  Like author, for if you've taken over a project from someone else.
-
-Here was the metadata section from flit using the older style:
-
-.. code-block:: toml
-
-    [tool.flit.metadata]
-    module="flit"
-    author="Thomas Kluyver"
-    author-email="thomas@kluyver.me.uk"
-    home-page="https://github.com/pypa/flit"
-    requires=[
-        "flit_core >=2.2.0",
-        "requests",
-        "docutils",
-        "tomli",
-        "tomli-w",
-    ]
-    requires-python=">=3.6"
-    description-file="README.rst"
-    classifiers=[
-        "Intended Audience :: Developers",
-        "License :: OSI Approved :: BSD License",
-        "Programming Language :: Python :: 3",
-        "Topic :: Software Development :: Libraries :: Python Modules",
-    ]
-
-.. _pyproject_toml_urls:
-
-URLs subsection
-~~~~~~~~~~~~~~~
-
-Your project's page on `pypi.org <https://pypi.org/>`_ can show a number of
-links, in addition to the ``home-page`` URL described above. You can
-point people to documentation or a bug tracker, for example.
-
-This section is called ``[tool.flit.metadata.urls]`` in the file. You can use
-any names inside it. Here it is for flit:
-
-.. code-block:: toml
-
-  [tool.flit.metadata.urls]
-  Documentation = "https://flit.pypa.io"
-
-.. versionadded:: 1.0
-
-.. _pyproject_toml_scripts:
-
-Scripts section
-~~~~~~~~~~~~~~~
-
-A ``[tool.flit.scripts]`` table can be used along with ``[tool.flit.metadata]``.
-It is in the same format as the newer ``[project.scripts]`` table
-:ref:`described above <pyproject_project_scripts>`.
-
-Entry points sections
-~~~~~~~~~~~~~~~~~~~~~
-
-``[tool.flit.entrypoints]`` tables can be used along with ``[tool.flit.metadata]``.
-They are in the same format as the newer ``[project.entry-points]`` tables
-:ref:`described above <pyproject_project_entrypoints>`.
-
 .. _pyproject_toml_sdist:
 
-Sdist section
--------------
+Contents of distribution files
+------------------------------
 
-.. versionadded:: 2.0
+When building a wheel, Flit includes the package contents (including non-Python
+data files, but not ``.pyc`` bytecode files) along with the normal wheel
+metadata.
 
-With no configuration, Flit can make an sdist with everything it needs
-to build and install your module: the package contents (including non-Python
-data files, but not ``.pyc`` bytecode files), your ``pyproject.toml`` file,
-the readme & license files given in the metadata, and the :ref:`external data
-folder <pyproject_toml_external_data>` if you specified that.
+When building an sdist, in addition to the package contents Flit includes
+everything it needs to build and install your module: your ``pyproject.toml``
+file, the readme & license files given in the metadata, and the :ref:`external
+data folder <pyproject_toml_external_data>` if you specified that.
 
-If you want more control, you can give lists of paths or glob patterns as
-``include`` and ``exclude`` in this section. For example:
+If you want more control over the content of the sdist, you can give lists of
+paths or glob patterns as ``include`` and ``exclude`` in the ``tool.flit.sdist``
+section of ``pyproject.toml``. For example:
 
 .. code-block:: toml
 
@@ -433,8 +297,21 @@ These paths:
 .. versionchanged:: 3.8
    Include and exclude patterns can now use recursive glob patterns (``**``).
 
+.. note::
+
+   Flit includes a tool to generate these rules for you from a git repository.
+   Generate any files that should be excluded, such as built documentation or
+   test coverage data, and then run ``python -m flit.sdist_rules`` in the folder
+   containing ``pyproject.toml``. Copy the rules into your project config and
+   adjust them as necessary.
+
 Exclusions have priority over inclusions. Bytecode is excluded by default and cannot
 be included.
+
+Note that in the common case where a tool builds a sdist and then builds the wheel
+*from* that sdist, the ``exclude`` pattern can indirectly affect the content of the
+final wheel (by omitting content from the sdist that would otherwise have been
+included in the wheel).
 
 Including files committed in git/hg
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

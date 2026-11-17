@@ -1,0 +1,6 @@
+---
+Bug-Database: https://github.com/pypa/flit/issues
+Documentation: https://flit.pypa.io
+Repository: https://github.com/pypa/flit.git
+Repository-Browse: https://github.com/pypa/flit
+Security-Contact: https://github.com/pypa/flit/tree/HEAD/SECURITY.md

@@ -14,7 +14,7 @@ Common options
    Path to a config file specifying the module to build. The default is
    ``pyproject.toml``.
 
-.. option::  --version
+.. option:: --version
 
    Show the version of Flit in use.
 
@@ -39,29 +39,11 @@ Build a wheel and an sdist (tarball) from the package.
 
    Limit to building either ``wheel`` or ``sdist``.
 
-.. option:: --setup-py
-
-   Generate a ``setup.py`` file in the sdist, so it can be installed by older
-   versions of pip.
-
-.. option:: --no-setup-py
-
-   Don't generate a setup.py file in the sdist. This is the default.
-   An sdist built without this will only work with tools that support PEP 517,
-   but the wheel will still be usable by any compatible tool.
-
-   .. versionchanged:: 3.5
-
-      Generating ``setup.py`` disabled by default.
-
 .. option:: --use-vcs
 
    Use the files checked in to git or mercurial as the starting list to include
    in an sdist, and then apply inclusions and exclusions :ref:`from pyproject.toml
    <pyproject_toml_sdist>`.
-
-   This is the default for now, but we're planning to switch to ``--no-use-vcs``
-   as the default in a future version.
 
 .. option:: --no-use-vcs
 
@@ -71,6 +53,8 @@ Build a wheel and an sdist (tarball) from the package.
    With this option, sdists from ``flit build`` are equivalent to those built
    by tools calling Flit as a backend, such as `build
    <https://pypa-build.readthedocs.io/en/stable/>`_.
+
+   This is the default for Flit version 4 and above.
 
 .. _publish_cmd:
 
@@ -87,8 +71,6 @@ or another repository.
    Limit to publishing either ``wheel`` or ``sdist``.
    You should normally publish the two formats together.
 
-.. option:: --setup-py
-.. option:: --no-setup-py
 .. option:: --use-vcs
 .. option:: --no-use-vcs
 
@@ -196,7 +178,7 @@ Flit guess.
 
 .. program:: flit init
 
-Create a new ``pyproject.toml``  config file by prompting for information about
+Create a new ``pyproject.toml`` config file by prompting for information about
 the module in the current directory.
 
 Environment variables

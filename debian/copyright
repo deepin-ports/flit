@@ -26,6 +26,7 @@ License: BSD-2-Clause
 Files: debian/*
 Copyright: 2020 Scott Kitterman <scott@kitterman.com>
            2022 Stefano Rivera <stefanor@debian.org>
+           2025-2026 Alexandre Detiste <tchet@debian.org>
 License: BSD-3-Clause
 
 License: BSD-3-Clause

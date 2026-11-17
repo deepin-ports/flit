@@ -38,7 +38,7 @@ class InstallTests(TestCase):
         direct_url_file = (
             self.tmpdir
             / 'site-packages'
-            / '{}-{}.dist-info'.format(package, version)
+            / f'{package}-{version}.dist-info'
             / 'direct_url.json'
         )
         assert_isfile(direct_url_file)
@@ -80,6 +80,13 @@ class InstallTests(TestCase):
         assert_isfile(self.tmpdir / 'scripts' / 'pkg_script')
         with (self.tmpdir / 'scripts' / 'pkg_script').open() as f:
             assert f.readline().strip() == "#!" + sys.executable
+        if sys.platform == 'win32':
+            cmd_path = self.tmpdir / 'scripts' / 'pkg_script.cmd'
+            assert_isfile(cmd_path)
+            raw = cmd_path.read_bytes()
+            assert b'\r\r\n' not in raw
+            assert raw.startswith(b'@echo off\r\n')
+            assert sys.executable.encode('utf-8') in raw
         self._assert_direct_url(
             samples_dir / 'package1', 'package1', '0.1', expected_editable=False
         )
@@ -331,11 +338,11 @@ def test_install_requires_extra(deps, extras, installed):
 
         cmd = MockCommand('mock_python')
         get_reqs = (
-            "#!{python}\n"
+            f"#!{sys.executable}\n"
             "import sys\n"
-            "with open({recording_file!r}, 'wb') as w, open(sys.argv[-1], 'rb') as r:\n"
+            f"with open({cmd.recording_file!r}, 'wb') as w, open(sys.argv[-1], 'rb') as r:\n"
             "    w.write(r.read())"
-        ).format(python=sys.executable, recording_file=cmd.recording_file)
+        )
         cmd.content = get_reqs
 
         with cmd as mock_py:
